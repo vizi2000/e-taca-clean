@@ -1,0 +1,87 @@
+# Docker Compose file for e-Taca project
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: etaca-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-etaca}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-etaca_dev_2024}
+      POSTGRES_DB: ${POSTGRES_DB:-etaca_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - etaca-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-etaca}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/ETaca.API/Dockerfile
+    container_name: etaca-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Pg: "Host=postgres;Database=${POSTGRES_DB:-etaca_db};Username=${POSTGRES_USER:-etaca};Password=${POSTGRES_PASSWORD:-etaca_dev_2024}"
+      Jwt__Key: "${JWT__Key}"
+      Jwt__Issuer: "e-Taca"
+      Jwt__Audience: "e-Taca"
+      Jwt__ExpirationMinutes: "1440"
+      Frontend__BaseUrl: "${FRONTEND_URL:-https://e-taca.borg.tools}"
+      Fiserv__StoreId: "${FISERV_STORE_ID:-760995999}"
+      Fiserv__Secret: "${Fiserv__Secret}"
+      Fiserv__SuccessUrl: "${FRONTEND_URL:-https://e-taca.borg.tools}/donation/success"
+      Fiserv__FailUrl: "${FRONTEND_URL:-https://e-taca.borg.tools}/donation/fail"
+      Fiserv__NotifyUrl: "${FISERV_NOTIFY_URL:-https://e-taca.borg.tools/api/v1.0/donations/webhook}"
+      Storage__Provider: "Local"
+      Storage__Local__UploadPath: "/app/wwwroot/uploads"
+      Email__SmtpHost: "${SMTP_HOST:-smtp.gmail.com}"
+      Email__SmtpPort: "${SMTP_PORT:-587}"
+      Email__SmtpUser: "${Email__User}"
+      Email__SmtpPassword: "${Email__AppPassword}"
+      Email__FromAddress: "${Email__From:-noreply@e-taca.borg.tools}"
+      Email__FromName: "${SMTP_FROM_NAME:-e-Taca}"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - etaca-network
+    restart: unless-stopped
+    volumes:
+      - uploads_data:/app/wwwroot/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-/api}"
+        NEXT_PUBLIC_APP_URL: "${FRONTEND_URL:-https://e-taca.borg.tools}"
+    container_name: etaca-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - etaca-network
+    restart: unless-stopped
+
+networks:
+  etaca-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  uploads_data:

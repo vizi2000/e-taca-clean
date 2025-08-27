@@ -1,0 +1,24 @@
+Using launch settings from /Users/wojciechwiesner/ai/e-taca_new_finalMVP/src/ETaca.API/Properties/launchSettings.json...
+Building...
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:8081
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /Users/wojciechwiesner/ai/e-taca_new_finalMVP/src/ETaca.API
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Users" AS u
+          WHERE u."Role" = 0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = DateTime), @p5='?' (DbType = Guid), @p6='?', @p7='?' (DbType = Int32), @p8='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Users" ("Id", "CreatedAt", "Email", "IsActive", "LastLoginAt", "OrganizationId", "PasswordHash", "Role", "UpdatedAt")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+warn: ETaca.API.Controllers.AdminController[0]
+      Admin user created via seed endpoint: admin@etaca.pl

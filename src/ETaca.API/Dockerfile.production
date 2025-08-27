@@ -1,0 +1,75 @@
+# Production-optimized Dockerfile for e-Taca API
+# Multi-stage build for minimal image size and security
+
+# Stage 1: Build environment
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+WORKDIR /src
+
+# Copy solution and project files for better layer caching
+COPY ETaca.sln ./
+COPY src/ETaca.API/ETaca.API.csproj ./src/ETaca.API/
+COPY src/ETaca.Application/ETaca.Application.csproj ./src/ETaca.Application/
+COPY src/ETaca.Domain/ETaca.Domain.csproj ./src/ETaca.Domain/
+COPY src/ETaca.Infrastructure/ETaca.Infrastructure.csproj ./src/ETaca.Infrastructure/
+
+# Restore dependencies (cached layer if no changes to .csproj files)
+RUN dotnet restore
+
+# Copy the rest of the source code
+COPY . .
+
+# Build the application in Release mode
+WORKDIR /src/src/ETaca.API
+RUN dotnet build -c Release --no-restore
+
+# Stage 2: Publish
+FROM build AS publish
+RUN dotnet publish -c Release -o /app/publish \
+    --no-restore \
+    --self-contained false \
+    /p:PublishSingleFile=false \
+    /p:PublishTrimmed=false
+
+# Stage 3: Runtime image (minimal)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
+
+# Install culture data for globalization and libgdiplus for QR code generation
+RUN apk add --no-cache \
+    icu-libs \
+    icu-data-full \
+    libgdiplus \
+    ca-certificates \
+    tzdata
+
+# Create non-root user for security
+RUN addgroup -g 1000 -S etaca && \
+    adduser -u 1000 -S etaca -G etaca
+
+WORKDIR /app
+
+# Copy published application from publish stage
+COPY --from=publish --chown=etaca:etaca /app/publish .
+
+# Create directories for uploads with proper permissions
+RUN mkdir -p /app/wwwroot/uploads && \
+    chown -R etaca:etaca /app/wwwroot
+
+# Security: Set environment variables
+ENV ASPNETCORE_URLS=http://+:8080 \
+    ASPNETCORE_ENVIRONMENT=Production \
+    DOTNET_RUNNING_IN_CONTAINER=true \
+    DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
+    TZ=UTC
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1
+
+# Switch to non-root user
+USER etaca
+
+# Expose port (not privileged)
+EXPOSE 8080
+
+# Use exec form to ensure proper signal handling
+ENTRYPOINT ["dotnet", "ETaca.API.dll"]

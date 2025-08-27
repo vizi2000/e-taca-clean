@@ -1,0 +1,60 @@
+---
+description: Docker build and environment variable handling for Next.js projects
+---
+
+# Docker Next.js Environment Variables Rule
+
+## Critical Issue: Build Cache vs Environment Variables
+
+When working with Next.js in Docker containers, **environment variables are only available at build time**, not runtime. This is especially important for `NEXT_PUBLIC_*` variables.
+
+### The Problem
+- Environment variables like `NEXT_PUBLIC_API_URL` are embedded into the JavaScript bundle during `npm run build`
+- If you change environment variables after building, the old values remain in the compiled code
+- Simply restarting the container won't pick up new environment variables
+
+### The Solution
+Always rebuild the container when environment variables change:
+
+```bash
+# Stop the container
+docker-compose down frontend
+
+# Clean build cache (important!)
+docker system prune -f
+
+# Rebuild with no cache to ensure fresh environment variables
+docker-compose build --no-cache frontend
+
+# Start the container
+docker-compose up -d frontend
+```
+
+### Why `--no-cache` is Critical
+- Docker caches build layers, including the npm build step
+- Without `--no-cache`, Docker might reuse cached layers with old environment variables
+- This leads to the old compiled JavaScript being served even after source code changes
+
+### Common Symptoms
+- API calls still using old ports (e.g., 8081 instead of 8080)
+- Hardcoded URLs in compiled JavaScript files
+- Environment variable changes not taking effect
+- Console errors about connection refused to old endpoints
+
+### Best Practices
+1. **Always rebuild** when changing `NEXT_PUBLIC_*` environment variables
+2. **Use `--no-cache`** when debugging environment variable issues
+3. **Clean build cache** if issues persist
+4. **Verify compiled output** by checking the `.next` directory contents
+
+### Verification
+After rebuilding, verify the fix by checking:
+```bash
+# Check if old hardcoded values are gone
+grep -r "old-value" frontend/.next/
+
+# Test the new configuration works
+curl http://localhost:3000
+```
+
+This rule applies to all Next.js Docker projects where environment variables need to be updated.

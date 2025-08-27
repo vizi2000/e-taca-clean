@@ -1,0 +1,50 @@
+Using launch settings from /Users/wojciechwiesner/ai/e-taca_new_finalMVP/src/ETaca.API/Properties/launchSettings.json...
+Building...
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:8081
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /Users/wojciechwiesner/ai/e-taca_new_finalMVP/src/ETaca.API
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (29ms) [Parameters=[@__dto_Nip_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Organizations" AS o
+          WHERE o."Nip" = @__dto_Nip_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__dto_AdminEmail_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Users" AS u
+          WHERE u."Email" = @__dto_AdminEmail_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__slug_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Organizations" AS o
+          WHERE o."Slug" = @__slug_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?', @p2='?' (DbType = DateTime), @p3='?', @p4='?', @p5='?', @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?' (DbType = Int32), @p12='?' (DbType = Single), @p13='?', @p14='?' (DbType = DateTime), @p15='?' (DbType = Guid), @p16='?' (DbType = DateTime), @p17='?', @p18='?' (DbType = Boolean), @p19='?' (DbType = DateTime), @p20='?' (DbType = Guid), @p21='?', @p22='?' (DbType = Int32), @p23='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Organizations" ("Id", "BankAccount", "CreatedAt", "Email", "FiservSecret", "FiservStoreId", "HeroImageUrl", "Krs", "Name", "Nip", "Slug", "Status", "ThemeOverlay", "ThemePrimary", "UpdatedAt")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14);
+      INSERT INTO "Users" ("Id", "CreatedAt", "Email", "IsActive", "LastLoginAt", "OrganizationId", "PasswordHash", "Role", "UpdatedAt")
+      VALUES (@p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23);
+info: ETaca.API.Services.AuthService[0]
+      New organization registered: Parafia św. Jana (ID: 149fe0fd-4ab1-496b-989d-daa013465ee5)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__dto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."CreatedAt", u."Email", u."IsActive", u."LastLoginAt", u."OrganizationId", u."PasswordHash", u."Role", u."UpdatedAt"
+      FROM "Users" AS u
+      WHERE u."Email" = @__dto_Email_0 AND u."IsActive"
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE "Users" SET "LastLoginAt" = @p0
+      WHERE "Id" = @p1;
+info: ETaca.API.Controllers.AuthController[0]
+      Successful login for email: admin@parafia.com
