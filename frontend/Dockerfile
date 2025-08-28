@@ -2,8 +2,8 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Build arguments for Next.js
-ARG NEXT_PUBLIC_API_URL=/api
+# Build arguments for Next.js (default to versioned API path)
+ARG NEXT_PUBLIC_API_URL=/api/v1.0
 ARG NEXT_PUBLIC_APP_URL=https://e-taca.borg.tools
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL

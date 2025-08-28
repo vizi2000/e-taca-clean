@@ -1,0 +1,43 @@
+{
+  "file": "src/ETaca.API/Services/PaymentService.cs",
+  "analysis_timestamp": "2025-08-28T00:02:00Z",
+  "file_size_lines": 332,
+  "key_features": [
+    "Fiserv payment gateway integration",
+    "HMACSHA256 signature validation",
+    "Webhook processing with idempotency",
+    "Enhanced validation for donations",
+    "HPP (Hosted Payment Page) form generation",
+    "Comprehensive logging for debugging"
+  ],
+  "security_features": [
+    "Webhook signature validation using HMACSHA256",
+    "Request validation and sanitization",
+    "Idempotency protection for webhook processing",
+    "Email validation",
+    "Amount validation with limits (1-100,000 PLN)",
+    "Organization status verification"
+  ],
+  "integration_details": {
+    "payment_provider": "Fiserv",
+    "supported_currency": "PLN (985)",
+    "transaction_type": "sale (immediate charge)",
+    "timezone": "Europe/Warsaw",
+    "hash_algorithm": "HMACSHA256",
+    "signature_method": "pipe-separated values"
+  },
+  "notable_implementations": [
+    "External reference generation with timestamp and random suffix",
+    "Comprehensive debug logging for hash generation",
+    "Webhook payload hash computation for duplicate detection",
+    "Support for UTM tracking parameters",
+    "Dynamic form HTML generation for payment redirection"
+  ],
+  "educational_value": "HIGH - demonstrates production payment integration patterns",
+  "complexity_level": "Advanced",
+  "lessons_learned_references": [
+    "Hash parameters must exclude transactionNotificationURL",
+    "Use pipe separator for concatenation, not empty string",
+    "Proper timezone handling for Fiserv datetime fields"
+  ]
+}

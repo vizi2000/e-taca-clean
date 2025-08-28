@@ -1,4 +1,6 @@
-using ETaca.Domain.Entities;
+Install ngrok (if not already installed)  │
+│    # Then expose your API port               │
+│    ngrok http 808ulesusing ETaca.Domain.Entities;
 using ETaca.Domain.Enums;
 using ETaca.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;

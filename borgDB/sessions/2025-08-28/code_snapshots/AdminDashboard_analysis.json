@@ -1,0 +1,52 @@
+{
+  "file": "frontend/app/admin/page.tsx",
+  "analysis_timestamp": "2025-08-28T00:04:00Z",
+  "file_size_lines": 981,
+  "key_features": [
+    "Next.js 13+ App Router client component",
+    "Role-based access control (Admin vs OrgOwner)",
+    "Responsive admin dashboard with tabbed interface",
+    "Real-time statistics display",
+    "CRUD operations for organizations and users",
+    "CSV export functionality",
+    "Framer Motion animations"
+  ],
+  "ui_components": [
+    "Glass morphism design system",
+    "Animated statistics cards",
+    "Data tables with status indicators",
+    "Modal forms for adding entities",
+    "Tab-based navigation",
+    "Icon-based status indicators"
+  ],
+  "authentication_flow": [
+    "localStorage token validation",
+    "Role-based route protection",
+    "Automatic redirection for unauthorized users",
+    "OrgOwner users redirected to /panel",
+    "Admin-only access to system dashboard"
+  ],
+  "data_management": [
+    "Statistics loading with error handling",
+    "Paginated data display",
+    "Real-time data refresh after operations",
+    "Form validation and submission",
+    "Status toggling for users and organizations"
+  ],
+  "api_integrations": [
+    "AdminService for statistics and entity management",
+    "CSV export endpoints",
+    "Organization registration API",
+    "User management API",
+    "Fiserv credentials configuration"
+  ],
+  "educational_value": "HIGH - demonstrates modern React admin dashboard patterns",
+  "complexity_level": "Intermediate to Advanced",
+  "ui_patterns": [
+    "Responsive grid layouts",
+    "Loading states and error handling",
+    "Modal dialog management",
+    "Form state management",
+    "Animation and micro-interactions"
+  ]
+}

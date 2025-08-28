@@ -47,7 +47,7 @@ services:
       Email__FromAddress: "${Email__From:-noreply@e-taca.borg.tools}"
       Email__FromName: "${SMTP_FROM_NAME:-e-Taca}"
     ports:
-      - "8080:8080"
+      - "8085:8080"  # expose for reverse proxy
     depends_on:
       postgres:
         condition: service_healthy
@@ -67,16 +67,33 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-/api}"
-        NEXT_PUBLIC_APP_URL: "${FRONTEND_URL:-https://e-taca.borg.tools}"
+        NEXT_PUBLIC_API_URL: "/api/v1.0"
+        NEXT_PUBLIC_APP_URL: "https://e-taca.borg.tools"
     container_name: etaca-frontend
     ports:
-      - "3000:3000"
+      - "3002:3000"  # expose for reverse proxy
     depends_on:
       - api
     networks:
       - etaca-network
     restart: unless-stopped
+
+# caddy:
+  #   image: caddy:2
+  #   container_name: etaca-caddy
+  #   depends_on:
+  #     - frontend
+  #     - api
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #   networks:
+  #     - etaca-network
+  #   restart: unless-stopped
 
 networks:
   etaca-network:
@@ -85,3 +102,5 @@ networks:
 volumes:
   postgres_data:
   uploads_data:
+  # caddy_data:
+  # caddy_config:

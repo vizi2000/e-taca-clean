@@ -23,16 +23,44 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var result = await _authService.LoginAsync(dto);
+        // Get client IP address for audit logging
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var forwardedFor = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(forwardedFor))
+        {
+            ipAddress = forwardedFor.Split(',')[0].Trim();
+        }
+        
+        // Create a new DTO with IP address
+        var loginDtoWithIp = dto with { ClientIpAddress = ipAddress };
+        
+        var result = await _authService.LoginAsync(loginDtoWithIp);
         
         if (result == null)
         {
-            _logger.LogWarning("Failed login attempt for email: {Email}", dto.Email);
-            return Unauthorized(new { message = "Invalid email or password" });
+            // Generic error message to prevent user enumeration
+            return Unauthorized(new { message = "Nieprawidłowe dane logowania" });
         }
 
-        _logger.LogInformation("Successful login for email: {Email}", dto.Email);
-        return Ok(result);
+        // Set JWT token as httpOnly cookie instead of returning in body
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, // Always use HTTPS in production
+            SameSite = SameSiteMode.Strict,
+            Expires = result.ExpiresAt
+        };
+        
+        Response.Cookies.Append("auth-token", result.Token, cookieOptions);
+        
+        // Return user info without token
+        return Ok(new 
+        { 
+            email = result.Email, 
+            role = result.Role, 
+            organizationId = result.OrganizationId,
+            expiresAt = result.ExpiresAt
+        });
     }
 
     [HttpPost("register-organization")]
@@ -46,6 +74,20 @@ public class AuthController : ControllerBase
         }
 
         return Ok(new { message, organizationId });
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public IActionResult Logout()
+    {
+        // Clear the auth cookie
+        Response.Cookies.Delete("auth-token");
+        
+        // Log the logout event
+        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        _logger.LogInformation("User logged out: {Email}", email);
+        
+        return Ok(new { message = "Wylogowano pomyślnie" });
     }
 
     [HttpGet("me")]

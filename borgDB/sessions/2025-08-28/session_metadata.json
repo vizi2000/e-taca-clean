@@ -1,0 +1,25 @@
+{
+  "session_id": "etaca-2025-08-28-001",
+  "project_name": "E-Taca Donation Platform",
+  "start_time": "2025-08-28T00:00:00Z",
+  "platform": "darwin",
+  "os_version": "Darwin 24.6.0",
+  "working_directory": "/Users/wojciechwiesner/ai/e-taca-clean",
+  "git_branch": "main",
+  "session_goals": [
+    "Monitor development activities on E-Taca donation platform",
+    "Document code changes and debugging sessions",
+    "Track payment integration (Fiserv) modifications",
+    "Capture UI changes and admin functionality updates",
+    "Maintain comprehensive documentation for educational content"
+  ],
+  "key_components": [
+    "Docker configurations (docker-compose.yml, Dockerfiles)",
+    "Frontend (Next.js in /frontend)",
+    "Backend API (.NET in /src/ETaca.API)",
+    "Payment Service (PaymentService.cs)",
+    "Admin Statistics (AdminStatisticsService.cs)"
+  ],
+  "documentation_format": "structured_json",
+  "screenshot_naming": "YYYY-MM-DD_HH-MM-SS_[component]_[action].png"
+}

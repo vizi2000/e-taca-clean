@@ -4,7 +4,8 @@ namespace ETaca.API.DTOs;
 
 public record LoginDto(
     [Required][EmailAddress] string Email,
-    [Required] string Password
+    [Required] string Password,
+    string? ClientIpAddress = null
 );
 
 public record RegisterOrganizationDto(

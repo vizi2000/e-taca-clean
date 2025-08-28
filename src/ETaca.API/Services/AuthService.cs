@@ -45,6 +45,9 @@ public class AuthService : IAuthService
 
         if (user == null || !VerifyPassword(dto.Password, user.PasswordHash))
         {
+            // Log failed attempt for audit trail
+            _logger.LogWarning("Failed login attempt for email: {Email} from IP: {IP}", 
+                dto.Email, dto.ClientIpAddress ?? "unknown");
             return null;
         }
         
@@ -57,6 +60,10 @@ public class AuthService : IAuthService
 
         user.LastLoginAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
+
+        // Log successful login for audit trail
+        _logger.LogInformation("Successful login for user: {Email} (ID: {UserId}) from IP: {IP}", 
+            user.Email, user.Id, dto.ClientIpAddress ?? "unknown");
 
         var token = GenerateJwtToken(user);
         var expirationMinutes = _configuration.GetValue<int>("Jwt:ExpirationMinutes", 1440);

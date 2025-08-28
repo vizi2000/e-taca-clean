@@ -3,6 +3,7 @@ using ETaca.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
+using Microsoft.AspNetCore.HttpOverrides;
 
 using QuestPDF.Infrastructure;
 
@@ -97,6 +98,16 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddMemoryCache();
 
+// Add anti-forgery protection for CSRF
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+    options.Cookie.Name = "XSRF-TOKEN";
+    options.Cookie.HttpOnly = false; // Allow JavaScript to read for SPA
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
 // Use extension methods for cleaner organization
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddRepositories();
@@ -161,6 +172,15 @@ app.UseMiddleware<ETaca.API.Middleware.SecurityHeadersMiddleware>();
 // 3. HTTPS redirection
 if (!app.Environment.IsDevelopment())
 {
+    // Respect X-Forwarded-* headers when behind reverse proxy (e.g., Caddy)
+    var forwardedOptions = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    };
+    forwardedOptions.KnownNetworks.Clear();
+    forwardedOptions.KnownProxies.Clear();
+    app.UseForwardedHeaders(forwardedOptions);
+
     app.UseHttpsRedirection();
     app.UseHsts();
 }
@@ -183,7 +203,13 @@ app.UseCors("AllowFrontend");
 // 6. Rate limiting before authentication to protect auth endpoints
 app.UseMiddleware<ETaca.API.Middleware.RateLimitMiddleware>();
 
-// 7. Authentication & Authorization
+// 7. CSRF Protection (after CORS, before authentication)
+app.UseMiddleware<ETaca.API.Middleware.CsrfMiddleware>();
+
+// 8. CAPTCHA protection for login attempts
+app.UseMiddleware<ETaca.API.Middleware.CaptchaMiddleware>();
+
+// 9. Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 

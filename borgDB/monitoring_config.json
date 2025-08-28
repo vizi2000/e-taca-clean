@@ -1,0 +1,73 @@
+{
+  "monitoring_configuration": {
+    "version": "1.0",
+    "active": true,
+    "session_id": "etaca-2025-08-28-001",
+    "watch_patterns": [
+      "src/**/*.cs",
+      "frontend/**/*.tsx",
+      "frontend/**/*.ts",
+      "frontend/**/*.js",
+      "*.yml",
+      "*.yaml",
+      "*.json",
+      "Dockerfile*",
+      "*.md"
+    ],
+    "trigger_conditions": {
+      "file_changes": {
+        "min_lines_changed": 5,
+        "exclude_patterns": [
+          "*.log",
+          "node_modules/**",
+          "bin/**",
+          "obj/**",
+          ".next/**",
+          "dist/**"
+        ]
+      },
+      "auto_screenshot_triggers": [
+        "error messages in console",
+        "test results display",
+        "UI component changes",
+        "payment flow testing",
+        "admin dashboard modifications"
+      ]
+    },
+    "documentation_priorities": [
+      {
+        "priority": 1,
+        "component": "PaymentService",
+        "reason": "Critical payment integration, high educational value"
+      },
+      {
+        "priority": 2,
+        "component": "AdminStatisticsService", 
+        "reason": "Performance optimization patterns, scalability lessons"
+      },
+      {
+        "priority": 3,
+        "component": "Admin Dashboard UI",
+        "reason": "Modern React patterns, UX best practices"
+      },
+      {
+        "priority": 4,
+        "component": "Docker Configuration",
+        "reason": "Production deployment patterns"
+      },
+      {
+        "priority": 5,
+        "component": "Testing Setup",
+        "reason": "Quality assurance practices"
+      }
+    ],
+    "screenshot_naming_convention": "YYYY-MM-DD_HH-MM-SS_[component]_[action].png",
+    "documentation_intervals": {
+      "timeline_update": "15 minutes",
+      "screenshot_review": "30 minutes",
+      "session_summary": "2 hours"
+    }
+  },
+  "active_monitoring_started": "2025-08-28T00:06:00Z",
+  "next_scheduled_check": "2025-08-28T00:21:00Z"
+}

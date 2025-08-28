@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 
@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   description: 'Nowoczesna platforma darowizn dla organizacji charytatywnych',
   keywords: 'darowizny, charity, organizacje charytatywne, e-taca',
   authors: [{ name: 'E-Taca' }],
-  viewport: 'width=device-width, initial-scale=1',
   manifest: '/manifest.json',
   other: {
     'theme-color': '#0F172A',
@@ -23,6 +22,11 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-touch-icon.png',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({

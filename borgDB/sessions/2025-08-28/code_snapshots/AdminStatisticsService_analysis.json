@@ -1,0 +1,47 @@
+{
+  "file": "src/ETaca.API/Services/AdminStatisticsService.cs",
+  "analysis_timestamp": "2025-08-28T00:03:00Z",
+  "file_size_lines": 483,
+  "key_features": [
+    "Performance-optimized statistics generation",
+    "Memory caching with 5-minute expiration",
+    "Paginated data retrieval for organizations, users, goals",
+    "Concurrent query execution for basic statistics",
+    "Split queries to avoid N+1 problems",
+    "Timeout protection for database queries"
+  ],
+  "performance_optimizations": [
+    "Simple COUNT queries instead of complex aggregations",
+    "Concurrent execution with Task.WhenAll",
+    "AsSplitQuery() for complex includes",
+    "Separate queries instead of eager loading",
+    "Dictionary-based lookups for related data",
+    "10-second timeout for basic statistics"
+  ],
+  "caching_strategy": {
+    "provider": "IMemoryCache",
+    "expiration": "5 minutes",
+    "cache_keys": [
+      "admin_statistics",
+      "admin_organizations_{page}_{pageSize}",
+      "admin_users_{page}_{pageSize}",
+      "admin_goals_{page}_{pageSize}"
+    ]
+  },
+  "data_aggregations": [
+    "Organization counts by status (Active/Pending/Inactive)",
+    "Donation counts and totals by status",
+    "User counts by role and activity status",
+    "Goal counts and progress calculations",
+    "Financial summaries with currency formatting"
+  ],
+  "educational_value": "HIGH - demonstrates scalable admin dashboard patterns",
+  "complexity_level": "Intermediate to Advanced",
+  "best_practices": [
+    "Separation of concerns with basic vs full statistics",
+    "Proper error handling and logging",
+    "Cache invalidation methods",
+    "Pagination for large datasets",
+    "Query optimization techniques"
+  ]
+}

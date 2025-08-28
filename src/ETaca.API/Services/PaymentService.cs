@@ -230,24 +230,27 @@ public class PaymentService : IPaymentService
         var txnDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, warsawTz)
                                         .ToString("yyyy:MM:dd-HH:mm:ss");
 
-        // Generate hash with parameters in alphabetical order (per Fiserv debug summary)
+        // Generate hash with parameters in alphabetical order (per FISERV_LESSONS_LEARNED.md)
+        // CRITICAL: transactionNotificationURL MUST NOT be included in hash calculation
         var hashParams = new SortedDictionary<string, string>
         {
             { "chargetotal", donation.Amount.ToString("F2") },
-            { "checkoutoption", "classic" }, // Use checkoutoption instead of mode (per debug summary)
-            { "currency", "985" }, // PLN
+            { "checkoutoption", "classic" },
+            { "currency", "985" }, // PLN currency code
+            { "hash_algorithm", "HMACSHA256" }, // Required for hash validation
             { "oid", donation.ExternalRef },
             { "responseFailURL", failUrl! },
             { "responseSuccessURL", successUrl! },
             { "storename", organization.FiservStoreId! },
             { "timezone", "Europe/Warsaw" },
-            { "transactionNotificationURL", notifyUrl! },
             { "txndatetime", txnDateTime },
             { "txntype", "sale" } // Immediate charge (not preauth)
+            // NOTE: transactionNotificationURL deliberately excluded from hash (per FISERV_LESSONS_LEARNED.md)
         };
 
-        // Generate hash from sorted parameters (excluding optional fields per Fiserv rules)
-        var concatenated = string.Join("", hashParams.Values);
+        // Generate hash from sorted parameters (per FISERV_LESSONS_LEARNED.md)
+        // CRITICAL: Use "|" separator, not empty string concatenation
+        var concatenated = string.Join("|", hashParams.Values);
         
         _logger.LogWarning("=== FISERV HASH DEBUG (per debug summary) ===");
         _logger.LogWarning("Store ID: {StoreId}", organization.FiservStoreId);
@@ -264,10 +267,11 @@ public class PaymentService : IPaymentService
         _logger.LogWarning("Generated hash: {Hash}", hashBase64);
         _logger.LogWarning("=== END FISERV DEBUG ===");
 
-        // Now create form fields (including hash and optional fields)
+        // Now create form fields (including hash and notification URL per FISERV_LESSONS_LEARNED.md)
         var fields = new Dictionary<string, string>(hashParams)
         {
-            { "hash", hashBase64 }
+            { "hashExtended", hashBase64 }, // Use hashExtended instead of hash for HMACSHA256
+            { "transactionNotificationURL", notifyUrl! } // Added AFTER hash generation
         };
 
         // Add optional fields to form ONLY if they have values (per Fiserv integration rules)

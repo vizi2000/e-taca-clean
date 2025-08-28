@@ -1,0 +1,12 @@
+{
+	email admin@e-taca.borg.tools
+}
+
+e-taca.borg.tools, www.e-taca.borg.tools {
+	encode zstd gzip
+
+	@api path /api/*
+	reverse_proxy @api api:8080
+
+	reverse_proxy frontend:3000
+}

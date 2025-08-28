@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { GlassCard } from '@/components/ui/glass-card'
 import { AdminService } from '@/lib/api/admin'
 import { formatCurrency } from '@/lib/utils'
+import { API_BASE_URL } from '@/lib/api-config'
 import { 
   Users, 
   Target, 
@@ -88,6 +89,8 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [showAddOrganization, setShowAddOrganization] = useState(false)
   const [showAddUser, setShowAddUser] = useState(false)
+  const [showEditOrganization, setShowEditOrganization] = useState(false)
+  const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null)
 
   // Helper function to convert status number to string
   const getStatusString = (status: number): string => {
@@ -273,6 +276,42 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Failed to add user:', error)
       alert('Failed to add user')
+    }
+  }
+
+  const handleEditOrganization = (org: Organization) => {
+    setSelectedOrganization(org)
+    setShowEditOrganization(true)
+  }
+
+  const handleUpdateFiservCredentials = async (orgId: string, storeId: string, secret: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const response = await fetch(`${API_BASE_URL}/admin/organizations/${orgId}/payment-config`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          FiservStoreId: storeId,
+          FiservSecret: secret
+        })
+      })
+
+      if (response.ok) {
+        await loadDashboardData() // Reload data
+        setShowEditOrganization(false)
+        setSelectedOrganization(null)
+      } else {
+        const errorData = await response.json()
+        setError(errorData.message || 'Błąd podczas aktualizacji danych płatności')
+      }
+    } catch (err) {
+      console.error('Error updating Fiserv credentials:', err)
+      setError('Błąd podczas aktualizacji danych płatności')
     }
   }
 
@@ -547,8 +586,9 @@ export default function AdminDashboard() {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
+                          onClick={() => handleEditOrganization(org)}
                           className="p-2 glass rounded-lg hover:bg-white/20 transition-colors"
-                          title="Ustawienia"
+                          title="Ustawienia organizacji"
                         >
                           <Settings className="w-4 h-4 text-white" />
                         </motion.button>
@@ -827,6 +867,113 @@ export default function AdminDashboard() {
                 >
                   Anuluj
                 </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Edit Organization Modal */}
+      {showEditOrganization && selectedOrganization && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="glass rounded-2xl p-6 w-full max-w-md"
+          >
+            <h3 className="text-xl font-bold text-white mb-6">Ustawienia organizacji</h3>
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              const formData = new FormData(e.currentTarget)
+              const storeId = formData.get('storeId') as string
+              const secret = formData.get('secret') as string
+              handleUpdateFiservCredentials(selectedOrganization.id, storeId, secret)
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="org-name" className="text-white/70 text-sm mb-1 block">Nazwa organizacji</label>
+                  <input
+                    id="org-name"
+                    type="text"
+                    value={selectedOrganization.name}
+                    disabled
+                    className="w-full px-4 py-3 glass rounded-xl bg-white/5 text-white/50"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="org-nip" className="text-white/70 text-sm mb-1 block">NIP</label>
+                  <input
+                    id="org-nip"
+                    type="text"
+                    value={selectedOrganization.nip}
+                    disabled
+                    className="w-full px-4 py-3 glass rounded-xl bg-white/5 text-white/50"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="org-email" className="text-white/70 text-sm mb-1 block">Email</label>
+                  <input
+                    id="org-email"
+                    type="email"
+                    value={selectedOrganization.email}
+                    disabled
+                    className="w-full px-4 py-3 glass rounded-xl bg-white/5 text-white/50"
+                  />
+                </div>
+
+                <hr className="border-white/10 my-6" />
+
+                <h4 className="text-lg font-semibold text-white mb-4">Konfiguracja płatności Fiserv</h4>
+                
+                <div>
+                  <label className="text-white/70 text-sm mb-1 block">Store ID *</label>
+                  <input
+                    type="text"
+                    name="storeId"
+                    required
+                    placeholder="np. 760995999"
+                    className="w-full px-4 py-3 glass rounded-xl bg-transparent text-white placeholder-white/40"
+                  />
+                  <p className="text-white/40 text-xs mt-1">Identyfikator sklepu otrzymany od Fiserv</p>
+                </div>
+
+                <div>
+                  <label className="text-white/70 text-sm mb-1 block">Shared Secret *</label>
+                  <input
+                    type="password"
+                    name="secret"
+                    required
+                    placeholder="Klucz tajny od Fiserv"
+                    className="w-full px-4 py-3 glass rounded-xl bg-transparent text-white placeholder-white/40"
+                  />
+                  <p className="text-white/40 text-xs mt-1">Klucz tajny do podpisywania transakcji</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setShowEditOrganization(false)
+                    setSelectedOrganization(null)
+                  }}
+                  className="flex-1 px-4 py-3 glass rounded-xl text-white hover:bg-white/20 transition-colors"
+                >
+                  Anuluj
+                </motion.button>
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-accent-blue to-accent-purple rounded-xl text-white hover:shadow-lg transition-all"
+                >
+                  Zapisz
+                </motion.button>
               </div>
             </form>
           </motion.div>
