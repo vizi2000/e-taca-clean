@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { GlassCard } from '@/components/ui/glass-card'
 import { formatCurrency } from '@/lib/utils'
+import { apiEndpoint } from '@/lib/api/config'
 import { 
   QrCode,
   Download,
@@ -69,7 +70,7 @@ export default function OrganizationPanel() {
       }
 
       // Load organization data
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1.0'}/organizations/${orgId}`, {
+      const response = await fetch(apiEndpoint(`/organizations/${orgId}`), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -100,7 +101,7 @@ export default function OrganizationPanel() {
     
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1.0'}/organizations/${organization.id}/qr-codes/pdf`, {
+      const response = await fetch(apiEndpoint(`/organizations/${organization.id}/qr-codes/pdf`), {
         headers: {
           'Authorization': `Bearer ${token}`
         }

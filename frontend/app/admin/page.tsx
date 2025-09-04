@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { GlassCard } from '@/components/ui/glass-card'
 import { AdminService } from '@/lib/api/admin'
+import { apiEndpoint } from '@/lib/api/config'
 import { formatCurrency } from '@/lib/utils'
 import { 
   Users, 
@@ -225,7 +226,7 @@ export default function AdminDashboard() {
   const handleAddOrganization = async (formData: FormData) => {
     try {
       // Call register organization endpoint using AdminService
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1.0'}/auth/register`, {
+      const response = await fetch(apiEndpoint('/auth/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -251,7 +252,7 @@ export default function AdminDashboard() {
     try {
       // For now, users can only be created via organization registration
       // System admin can create other admins using seed-admin endpoint
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1.0'}/admin/seed-admin`, {
+      const response = await fetch(apiEndpoint('/admin/seed-admin'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

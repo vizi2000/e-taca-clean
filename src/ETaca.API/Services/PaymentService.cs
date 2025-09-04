@@ -230,43 +230,34 @@ public class PaymentService : IPaymentService
         var txnDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, warsawTz)
                                         .ToString("yyyy:MM:dd-HH:mm:ss");
 
-        // Generate hash with parameters in alphabetical order (per Fiserv debug summary)
-        var hashParams = new SortedDictionary<string, string>
+        // Select parameters included in signature (alphabetically by key), EXCLUDING transactionNotificationURL
+        // and using '|' as a separator. Include hash_algorithm per Fiserv requirements.
+        var signatureParams = new SortedDictionary<string, string>
         {
             { "chargetotal", donation.Amount.ToString("F2") },
-            { "checkoutoption", "classic" }, // Use checkoutoption instead of mode (per debug summary)
-            { "currency", "985" }, // PLN
+            { "checkoutoption", "combinedpage" },
+            { "currency", "985" }, // PLN numeric code
+            { "hash_algorithm", "HMACSHA256" },
             { "oid", donation.ExternalRef },
             { "responseFailURL", failUrl! },
             { "responseSuccessURL", successUrl! },
             { "storename", organization.FiservStoreId! },
             { "timezone", "Europe/Warsaw" },
-            { "transactionNotificationURL", notifyUrl! },
             { "txndatetime", txnDateTime },
-            { "txntype", "sale" } // Immediate charge (not preauth)
+            { "txntype", "sale" }
         };
 
-        // Generate hash from sorted parameters (excluding optional fields per Fiserv rules)
-        var concatenated = string.Join("", hashParams.Values);
-        
-        _logger.LogWarning("=== FISERV HASH DEBUG (per debug summary) ===");
-        _logger.LogWarning("Store ID: {StoreId}", organization.FiservStoreId);
-        _logger.LogWarning("Secret: {Secret}", organization.FiservSecret); // Full secret for debugging
-        _logger.LogWarning("Hash parameters (sorted): {Params}", 
-            string.Join(" | ", hashParams.Select(kvp => $"{kvp.Key}={kvp.Value}")));
-        _logger.LogWarning("Concatenated string: '{Data}'", concatenated);
-        _logger.LogWarning("Concatenated length: {Length}", concatenated.Length);
-        
+        // Build signature input string (pipe separator per integration rules)
+        var concatenated = string.Join("|", signatureParams.Values);
+
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(organization.FiservSecret!));
         var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(concatenated));
         var hashBase64 = Convert.ToBase64String(hash);
-        
-        _logger.LogWarning("Generated hash: {Hash}", hashBase64);
-        _logger.LogWarning("=== END FISERV DEBUG ===");
 
-        // Now create form fields (including hash and optional fields)
-        var fields = new Dictionary<string, string>(hashParams)
+        // Create form fields: signature params + transactionNotificationURL + computed hash + optional buyer fields
+        var fields = new Dictionary<string, string>(signatureParams)
         {
+            { "transactionNotificationURL", notifyUrl! },
             { "hash", hashBase64 }
         };
 

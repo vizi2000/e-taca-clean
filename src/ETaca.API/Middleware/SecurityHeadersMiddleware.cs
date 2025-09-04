@@ -36,16 +36,28 @@ public class SecurityHeadersMiddleware
         }
         
         // Content Security Policy
+        var fiservEndpoint = _configuration["Fiserv:Endpoint"];
+        var formAction = "form-action 'self'";
+        if (!string.IsNullOrWhiteSpace(fiservEndpoint))
+        {
+            try
+            {
+                var u = new Uri(fiservEndpoint);
+                formAction += $" {u.Scheme}://{u.Host}";
+            }
+            catch { /* ignore parse errors */ }
+        }
+
         var cspDirectives = new List<string>
         {
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com", // For frontend libraries
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
             "font-src 'self' https://fonts.gstatic.com data:",
             "img-src 'self' data: https: blob:",
             "connect-src 'self' https://e-taca.borg.tools wss://e-taca.borg.tools",
             "frame-ancestors 'none'",
-            "form-action 'self'",
+            formAction,
             "base-uri 'self'",
             "object-src 'none'",
             "upgrade-insecure-requests"

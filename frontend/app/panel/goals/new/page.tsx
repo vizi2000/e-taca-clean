@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiEndpoint } from '@/lib/api/config'
 import { GlassCard } from '@/components/ui/glass-card'
 import { ArrowLeft, Target, DollarSign, Calendar } from 'lucide-react'
 
@@ -21,7 +22,7 @@ export default function NewGoal() {
     
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1.0'}/goals`, {
+      const response = await fetch(apiEndpoint('/goals'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
